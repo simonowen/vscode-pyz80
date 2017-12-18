@@ -1,0 +1,29 @@
+{
+  "hello": {
+    "prefix": "hello",
+    "body": [
+      "; Hello, World! for SAM Coupé",
+      "",
+      "        org &8000",
+      "        dump \\$          ; put code at current ORG address",
+      "        autoexec        ; auto-execute code when disk is booted",
+      "",
+      "start:  ld  a,2         ; main screen stream number",
+      "        call &0112      ; SETSTRM - set stream in A",
+      "",
+      "        ld  hl,msg",
+      "loop:   ld  a,(hl)",
+      "        and a",
+      "        ret z",
+      "",
+      "        rst &10         ; display character in A",
+      "        inc hl",
+      "        jr  loop",
+      "",
+      "msg:    defm \"Hello, World!\"",
+      "        defb &0d, &00\t; carriage-return, null terminator",
+      ""
+    ],
+    "description": "Hello, World!"
+  }
+}

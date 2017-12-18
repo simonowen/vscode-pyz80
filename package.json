@@ -1,0 +1,150 @@
+{
+	"name": "pyz80",
+	"displayName": "pyz80 Assembler",
+	"description": "Build SAM Coupé programs in Visual Studio Code",
+	"version": "1.0.0",
+	"publisher": "simonowen",
+	"icon": "images/icon.png",
+	"license": "MIT",
+	"author": {
+		"name": "Simon Owen",
+		"url": "http://github.com/simonowen"
+	},
+	"engines": {
+		"vscode": "^1.18.0"
+	},
+	"categories": [
+		"Languages"
+	],
+	"homepage": "https://github.com/simonowen/vscode-pyz80",
+	"bugs": {
+		"url": "https://github.com/simonowen/vscode-pyz80/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/simonowen/vscode-pyz80.git"
+	},
+	"keywords": [
+		"z80",
+		"sam coupe"
+	],
+	"activationEvents": [
+		"onLanguage:pyz80"
+	],
+	"main": "./extension",
+	"contributes": {
+		"configuration": {
+			"title": "pyz80",
+			"type": "object",
+			"properties": {
+				"pyz80.path": {
+					"type": "string",
+					"default": "",
+					"description": "Path to pyz80.py (or blank for built-in version)"
+				},
+				"pyz80.python": {
+					"type": "string",
+					"default": "python",
+					"description": "Path to Python interpreter for pyz80.py"
+				},
+				"pyz80.simcoupe": {
+					"type": "string",
+					"default": "simcoupe",
+					"description": "Path to SimCoupe for Build and Run"
+				},
+				"pyz80.samdisk": {
+					"type": "string",
+					"default": "samdisk",
+					"description": "Path to SAMdisk v4 for launch via Trinity"
+				}
+			}
+		},
+		"configurationDefaults": {
+			"[pyz80]": {
+				"editor.detectIndentation": false,
+				"editor.quickSuggestions": {
+					"other": false,
+					"comments": false,
+					"strings": false
+				}
+			}
+		},
+		"keybindings": [
+			{
+				"key": "f10",
+				"command": "pyz80.build",
+				"when": "editorLangId == pyz80"
+			},
+			{
+				"key": "ctrl-f10",
+				"command": "pyz80.run",
+				"when": "editorLangId == pyz80"
+			},
+			{
+				"key": "ctrl-shift-f10",
+				"command": "pyz80.trinity",
+				"when": "editorLangId == pyz80"
+			}
+		],
+		"commands": [
+			{
+				"command": "pyz80.build",
+				"title": "pyz80: Assemble the current source file"
+			},
+			{
+				"command": "pyz80.run",
+				"title": "pyz80: Launch with SimCoupe"
+			},
+			{
+				"command": "pyz80.trinity",
+				"title": "pyz80: Send to Trinity using SAMdisk"
+			}
+		],
+		"languages": [
+			{
+				"id": "pyz80",
+				"aliases": [
+					"Z80",
+					"pyz80"
+				],
+				"extensions": [
+					".asm",
+					".z80s",
+					".s"
+				],
+				"configuration": "./language-configuration.json"
+			}
+		],
+		"grammars": [
+			{
+				"language": "pyz80",
+				"scopeName": "source.pyz80",
+				"path": "./syntaxes/Z80.tmLanguage"
+			}
+		],
+		"snippets": [
+			{
+				"language": "pyz80",
+				"path": "./snippets/pyz80.json"
+			}
+		],
+		"problemMatchers": [
+			{
+				"name": "pyz80",
+				"label": "pyz80 Assembler Output",
+				"owner": "pyz80",
+				"fileLocation": [
+					"relative",
+					"${workspaceFolder}"
+				],
+				"pattern": {
+					"regexp": "^(.*):(\\d+)\\s+(error|warning):\\s+(.*)",
+					"file": 1,
+					"line": 2,
+					"severity": 3,
+					"message": 4
+				}
+			}
+		]
+	}
+}
