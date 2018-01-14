@@ -106,9 +106,3 @@ You'll still need to provide the guts of the Makefile/make.bat process, of cours
 
 The pyz80 assembler and SAMDOS2 binary are distributed under the terms of the GNU General Public License version 2.  
 The rest of the Visual Studio Code extension is distributed under the MIT License.
-
-## Release Notes
-
-### v1.0.0
-
-Initial release.
