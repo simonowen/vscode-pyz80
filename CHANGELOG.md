@@ -1,5 +1,8 @@
 # Change Log
 
+## Version 1.1.3 (2020-02-23)
+- Updated pyz80.py with Windows path fixes.
+
 ## Version 1.1.1 (2020-02-09)
 - Updated to use latest pyz80.py
 

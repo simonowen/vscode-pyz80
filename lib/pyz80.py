@@ -341,7 +341,7 @@ def file_and_stack(explicit_currentfile=None):
     if explicit_currentfile==None:
         explicit_currentfile = global_currentfile
     
-    f,l = explicit_currentfile.split(':')
+    f,l = explicit_currentfile.rsplit(':', 1)
     s=''
     for i in forstack:
         s=s+"^"+str(i[2])
@@ -373,15 +373,15 @@ def get_symbol(sym):
             else:
                 directive=''
             
-            reqfile,reqline = file_and_stack().split(':')
+            reqfile,reqline = file_and_stack().rsplit(':', 1)
             reqline = int(reqline)
  
             closestKey = None
             for key in symboltable:
-                if (sym+'@'+reqfile+":").startswith(key.split(":",1)[0]+":") or (sym+'@'+reqfile+":").startswith(key.split(":",1)[0]+"^"):
+                if (sym+'@'+reqfile+":").startswith(key.rsplit(":",1)[0]+":") or (sym+'@'+reqfile+":").startswith(key.rsplit(":",1)[0]+"^"):
                     # key is allowed fewer layers of FOR stack, but any layers it has must match
                     # ensure a whole number (ie 1 doesn't match 11) by forceing a colon or hat
-                    symfile,symline = key.split(':')
+                    symfile,symline = key.rsplit(':', 1)
                     symline=int(symline)
                     
                     difference = reqline - symline
@@ -396,13 +396,13 @@ def get_symbol(sym):
                 use_include_stack.reverse()
                 # try searching up the include stack
                 for include_item in use_include_stack:
-                    include_file, include_line = include_item[1].split(":",1)
+                    include_file, include_line = include_item[1].rsplit(":",1)
                     if not closestKey:
                         for key in symboltable:
-                            if (sym+'@'+include_file+":").startswith(key.split(":",1)[0]+":") or (sym+'@'+include_file+":").startswith(key.split(":",1)[0]+"^"):
+                            if (sym+'@'+include_file+":").startswith(key.rsplit(":",1)[0]+":") or (sym+'@'+include_file+":").startswith(key.rsplit(":",1)[0]+"^"):
                                 # key is allowed fewer layers of FOR stack, but any layers it has must match
                                 # ensure a whole number (ie 1 doesn't match 11) by forceing a colon or hat
-                                symfile,symline = key.split(':')
+                                symfile,symline = key.rsplit(':', 1)
                                 symline=int(symline)
 
                                 difference = int(include_line) - symline
@@ -1771,7 +1771,7 @@ def assembler_pass(p, inputfile):
             writelisting(lstout)
 
         if global_currentfile.startswith(this_currentfilename+":") and int(global_currentfile.rsplit(':',1)[1]) != consider_linenumber:
-            consider_linenumber = int(global_currentfile.rsplit(':')[-1])
+            consider_linenumber = int(global_currentfile.rsplit(':', 1)[1])
 
         consider_linenumber += 1
 
