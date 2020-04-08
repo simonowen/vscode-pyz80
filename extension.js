@@ -46,11 +46,13 @@ function activate(context) {
         let mapPath = filePath.replace(/\.[^.]+$/, '') + ".map";
         let pythonPath = config.python || "${config:python.pythonPath}" || "python";
         let pyz80Path = config.path || context.asAbsolutePath('lib/pyz80.py');
+        let pyz80Opts = config.pyz80opts || "";
         let samdosPath = context.asAbsolutePath('lib/samdos2');
         let cmd = pythonPath + ' ' +
             '"' + pyz80Path + '"' + ' ' +
             '-I ' + '"' + samdosPath + '"' + ' ' +
             '--mapfile=' + '"' + mapPath + '"' + ' ' +
+            pyz80Opts + ' ' +
             '"' + filePath + '"';
         getTerminal().sendText(cmd);
     }));

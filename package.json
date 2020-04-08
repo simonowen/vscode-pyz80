@@ -42,6 +42,11 @@
 					"default": "",
 					"description": "Path to pyz80.py (or blank for built-in version)"
 				},
+				"pyz80.pyz80opts": {
+					"type": "string",
+					"default": "",
+					"description": "Additional command-line options for pyz80.py"
+				},
 				"pyz80.python": {
 					"type": "string",
 					"default": "python",
@@ -109,6 +114,7 @@
 				],
 				"extensions": [
 					".asm",
+					".z80",
 					".z80s",
 					".s"
 				],
