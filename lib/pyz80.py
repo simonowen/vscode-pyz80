@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from __future__ import print_function
+from __future__ import division
 
 # TODO: define and assemble macro blocks
 # added FILESIZE("filename")
@@ -37,6 +38,8 @@ def printusage():
     print("   treat source labels as case sensitive (as COMET itself did)")
     print("--nobodmas")
     print("   treat arithmetic operators without precedence (as COMET itself did)")
+    print("--intdiv")
+    print("   force all division to give an integer result (as COMET itself did)")
     print("-s regexp")
     print("   print the value of any symbols matching the given regular expression")
     print("   This may be used multiple times to output more than one subset")
@@ -354,7 +357,6 @@ def set_symbol(sym, value, explicit_currentfile=None, is_label=False):
     if sym[0]=='@':
         sym = sym + '@' + file_and_stack(explicit_currentfile=explicit_currentfile)
     symboltable[sym] = value 
-    symbolcase[sym] = symorig
 
     if is_label:
         labeltable[sym] = value
@@ -454,7 +456,10 @@ def parse_expression(arg, signed=0, byte=0, word=0, silenterror=0):
     arg = arg.replace('%','0b') # COMET syntax for binary literals (parsed later, change to save confusion with modulus)
     arg = arg.replace('\\','%') # COMET syntax for modulus
     arg = arg.replace('&','0x') # COMET syntax for hex numbers
-    
+
+    if INTDIV:
+        arg = re.sub(r'(?<!/)/(?!/)', r'//', arg) # COMET integer division
+
     #    don't do these except at the start of a token:    
     arg = re.sub('\\b0X', '0x', arg) # darnit, this got capitalized
     arg = re.sub('\\b0B', '0b', arg) # darnit, this got capitalized
@@ -1778,7 +1783,7 @@ def assembler_pass(p, inputfile):
 ###########################################################################
 
 try:
-    option_args, file_args = getopt.getopt(sys.argv[1:], 'ho:s:eD:I:', ['version','help','nozip','obj=','case','nobodmas','exportfile=','importfile=','mapfile=','lstfile='])
+    option_args, file_args = getopt.getopt(sys.argv[1:], 'ho:s:eD:I:', ['version','help','nozip','obj=','case','nobodmas','intdiv','exportfile=','importfile=','mapfile=','lstfile='])
     file_args = [os.path.normpath(x) for x in file_args]
 except getopt.GetoptError:
     printusage()
@@ -1792,6 +1797,7 @@ PYTHONERRORS = False
 ZIP = True
 CASE = False
 NOBODMAS = False
+INTDIV = False
 
 lstcode=""
 listsymbols=[]
@@ -1836,6 +1842,9 @@ for option,value in option_args:
     
     if option in ['--case']:
         CASE = True
+
+    if option in ['--intdiv']:
+        INTDIV = True
 
     if option in ['--exportfile']:
         if exportfile == None:
@@ -1896,7 +1905,6 @@ for inputfile in file_args:
         sys.exit(2)
 
     symboltable = {}
-    symbolcase = {}
     symusetable = {}
     labeltable = {}
     memory = []
@@ -1921,15 +1929,11 @@ for inputfile in file_args:
         set_symbol(sym[0], int(sym[1]))
 
     for picklefilename in importfiles:
-        picklefile = open(picklefilename)
-        u = pickle.Unpickler(picklefile)
-        ImportSymbols = u.load()
+        with open(picklefilename, "rb") as f:
+            ImportSymbols = pickle.load(f)
         for sym,val in list(ImportSymbols.items()):
-            if not CASE:
-                symboltable[sym.upper()]=val
-            else:
-                symboltable[sym]=val
-        picklefile.close()
+            symkey = sym if CASE else sym.upper()
+            symboltable[symkey]=val
 
     firstpage=32
     firstpageoffset=16384
@@ -1973,22 +1977,22 @@ for inputfile in file_args:
     for symreg in listsymbols:
         # add to printsymbols any pair from symboltable whose key matches symreg
         for sym in symboltable:
-            if re.search(symreg, sym, re.IGNORECASE):
-                printsymbols[symbolcase[sym]] = symboltable[sym]
+            if re.search(symreg, sym, 0 if CASE else re.IGNORECASE):
+                printsymbols[sym] = symboltable[sym]
 
     if printsymbols != {}:
         print(printsymbols)
 
     if exportfile:
-        f = open(exportfile,'w')
-        p = pickle.Pickler(f)
-        p.dump(symboltable)
+        with open(exportfile, 'wb') as f:
+            pickle.dump(symboltable, f, protocol=0)
 
     if mapfile:
         addrmap = {}
         for sym,count in sorted(list(symusetable.items()), key=lambda x: x[1]):
             if sym in labeltable:
-                addrmap[labeltable[sym]] = symbolcase[sym]
+                symkey = sym if CASE else sym.upper()
+                addrmap[labeltable[sym]] = symkey
 
         with open(mapfile,'w') as f:
             for addr,sym in sorted(addrmap.items()):
