@@ -1,5 +1,11 @@
 # Change Log
 
+## Version 1.2.1 (2020-04-14)
+- Updated pyz80.py with symbol case fix.
+
+## Version 1.2.0 (2020-04-08)
+- Updated pyz80.py with Python 3 fixes.
+
 ## Version 1.1.3 (2020-02-23)
 - Updated pyz80.py with Windows path fixes.
 
