@@ -40,33 +40,39 @@
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(?i)\b(autoexec|db|defb|dm|defm|defs|defw|ds|dump|dw|else|endif|endm|equ|for|if|ifnb|inc|include|list|local|macro|mdat|org|xlist|z80)\b</string>
+			<string>(?i)\b(align|autoexec|db|defb|dm|defm|defs|defw|ds|dump|dw|else|endif|endm|equ|for|if|ifnb|inc|include|list|local|macro|mdat|next|org|xlist|z80)\b</string>
 			<key>name</key>
-			<string>meta.preprocessor.directive.z80</string>
+			<string>keyword.directive.z80</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(?i)^(\s*[a-z_]\w+:|[a-z_]\w+)</string>
+			<string>(?i)^(\s*@?[0-9a-z_.]*:)</string>
 			<key>name</key>
 			<string>entity.name.function.z80</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(\b\d+)</string>
+			<string>(?i)(\$|@|(@[-+])?[a-z_.]+[0-9a-z_.]*)</string>
 			<key>name</key>
-			<string>constant.numeric.integer.decimal.z80</string>
+			<string>variable.identifier.z80</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(&amp;[0-9a-fA-F]+)</string>
+			<string>(?i)(&amp;[0-9a-f]+|0x[0-9a-f]+)</string>
 			<key>name</key>
 			<string>constant.numeric.integer.hexadecimal.z80</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>(%[01]+)</string>
+			<string>(?i)(%[01]+|0b[01]+)</string>
 			<key>name</key>
 			<string>constant.numeric.integer.binary.z80</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b\d+\b</string>
+			<key>name</key>
+			<string>constant.numeric.integer.decimal.z80</string>
 		</dict>
 		<dict>
 			<key>begin</key>
