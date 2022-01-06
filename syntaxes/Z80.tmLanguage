@@ -75,15 +75,6 @@
 			<string>'</string>
 			<key>name</key>
 			<string>string.quoted.single.z80</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>match</key>
-					<string>''</string>
-					<key>name</key>
-					<string>constant.character.escape.apostrophe</string>
-				</dict>
-			</array>
 		</dict>
 		<dict>
 			<key>begin</key>
@@ -92,15 +83,6 @@
 			<string>"</string>
 			<key>name</key>
 			<string>string.quoted.double.z80</string>
-			<key>patterns</key>
-			<array>
-				<dict>
-					<key>match</key>
-					<string>\\.</string>
-					<key>name</key>
-					<string>constant.character.escape.z80</string>
-				</dict>
-			</array>
 		</dict>
 	</array>
 	<key>scopeName</key>
