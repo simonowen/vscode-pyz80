@@ -1,5 +1,9 @@
 # Change Log
 
+## Version 1.2.2 (2022-01-06)
+- Improved syntax colouring.
+- Updated pyz80.py to latest version.
+
 ## Version 1.2.1 (2020-04-14)
 - Updated pyz80.py with symbol case fix.
 
