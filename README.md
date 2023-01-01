@@ -8,12 +8,15 @@ For convenient use with small projects the extension includes:
 
 * an updated pyz80 from my [GitHub page](https://github.com/simonowen/pyz80).
 * **F10** shortcut to assemble the current source file to a SAM disk image
-* **Ctrl-F10** shortcut to run the latest disk image
-* **Ctrl-Shift-F10** shortcut to send the latest disk image to a networked SAM
+* **Ctrl-F10** shortcut to run the latest disk image[^1]
+* **Ctrl-Shift-F10** shortcut to send the latest disk image to a networked SAM[^1][^2]
 * SAMDOS v2 added as the first file in the generated disk image
 * generation of a symbol map file compatible with the SimCoupe v1.1 debugger
 
 Larger projects may prefer the extra flexibility provided by Visual Studio Code build tasks.  
+
+[^1]: Requires `DUMP` and `AUTOEXEC` directives in assembly source code - see [pyz80 docs](https://github.com/simonowen/pyz80/blob/master/README.md)
+[^2]: Requires a SAM running [trinload](https://simonowen.com/blog/2015/03/05/trinload-10/)
 
 ## Requirements
 
