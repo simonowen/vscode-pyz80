@@ -1,5 +1,8 @@
 # Change Log
 
+## Version 1.4.2 (2024-04-07)
+- Updated pyz80.py to latest version, fixing string escape warnings.
+
 ## Version 1.4.1 (2023-05-13)
 - Added mainsource setting to specify primary source file to assemble.
 - Added prebuild and postbuild command settings for custom processing.

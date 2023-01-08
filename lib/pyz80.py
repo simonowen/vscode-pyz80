@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from __future__ import division
+import math
 
 # TODO: define and assemble macro blocks
 # added FILESIZE("filename")
@@ -135,7 +136,7 @@ def add_file_to_disk_image(image, filename, codestartpage, codestartoffset, exec
     for i in range(10):
         image[dirpos+1+i]  = ord((filename+"          ")[i])
 
-    nsectors = 1 + (filelength+9)//510
+    nsectors = math.ceil(( filelength + 9 ) / 510)
     image[dirpos+11] = nsectors // 256 # MSB number of sectors used
     image[dirpos+12] = nsectors % 256 # LSB number of sectors used
 
@@ -468,14 +469,14 @@ def parse_expression(arg, signed=0, byte=0, word=0, silenterror=0):
     arg = arg.replace('$','('+str(origin)+')')
     arg = arg.replace('%','0b') # COMET syntax for binary literals (parsed later, change to save confusion with modulus)
     arg = arg.replace('\\','%') # COMET syntax for modulus
-    arg = re.sub('&([0-9a-fA-F]+\\b)', '0x\g<1>', arg) # COMET syntax for hex numbers
+    arg = re.sub(r'&([0-9a-fA-F]+\b)', r'0x\g<1>', arg) # COMET syntax for hex numbers
 
     if INTDIV:
         arg = re.sub(r'(?<!/)/(?!/)', r'//', arg) # COMET integer division
 
     #    don't do these except at the start of a token:
-    arg = re.sub('\\b0X', '0x', arg) # darnit, this got capitalized
-    arg = re.sub('\\b0B', '0b', arg) # darnit, this got capitalized
+    arg = re.sub(r'\b0X', '0x', arg) # darnit, this got capitalized
+    arg = re.sub(r'\b0B', '0b', arg) # darnit, this got capitalized
 
 # if the argument contains letters at this point,
 # it's a symbol which needs to be replaced
@@ -1638,7 +1639,7 @@ def op_ENDIF(p,opargs):
     return 0
 
 def assemble_instruction(p, line):
-    match = re.match('^(\w+)(.*)', line)
+    match = re.match(r'^(\w+)(.*)', line)
     if not match:
         fatal("Expected opcode or directive")
 
