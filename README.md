@@ -2,30 +2,38 @@
 
 ## Features
 
-Z80 assembly syntax colouring, plus a wrapper around Andrew Collier's [pyz80 assembler](https://sourceforge.net/projects/pyz80/) for the SAM Coupé.
+Z80 assembly syntax colouring, plus a wrapper around Andrew Collier's pyz80 assembler for the SAM Coupé.
 
 For convenient use with small projects the extension includes:
 
-* an updated pyz80 from my [GitHub page](https://github.com/simonowen/pyz80).
-* **F10** shortcut to assemble the current source file to a SAM disk image
-* **Ctrl-F10** shortcut to run the latest disk image
-* **Ctrl-Shift-F10** shortcut to send the latest disk image to a networked SAM
-* SAMDOS v2 added as the first file in the generated disk image
-* generation of a symbol map file compatible with the SimCoupe v1.1 debugger
+* the latest pyz80 from my [GitHub page](https://github.com/simonowen/pyz80).
+* **F10** shortcut to assemble Z80 source code to a SAM disk image.
+* **Ctrl-F10** shortcut to assemble and run the disk image in SimCoupe.
+* **Ctrl-Shift-F10** shortcut to assemble and send to a networked SAM Coupé.
+* SAMDOS v2 added as the first file in the generated disk image to make it bootable.
+* generation of a symbol map file compatible with the SimCoupe v1.1+ debugger.
 
-Larger projects may prefer the extra flexibility provided by Visual Studio Code build tasks.  
+## Additional Requirements
 
-## Requirements
+* [Python](https://www.python.org/downloads/) version v2.x or later to run the pyz80 assembler.
+* [SimCoupe](https://simonowen.com/simcoupe) v1.1 or later to run and debug code with symbols.
+* [SAMdisk](https://github.com/simonowen/samdisk/releases/tag/20220725) v4 or later to send code to a networked SAM running TrinLoad.
 
-* [Python](https://www.python.org/downloads/) version v2.x or v3.x to assemble code
-* [SimCoupe v1.1](https://github.com/simonowen/simcoupe/releases) or later to run and debug code with symbols
-* [SAMdisk v4](https://github.com/simonowen/samdisk) or later to send code to a networked SAM fitted with a [Trinity](https://www.samcoupe.com/hardtrin.htm) ethernet interface
+If these programs are not already in your path you will need to set the appropriate configuration settings.
 
-If these programs are not in your path you'll need to set the appropriate configuration variables.
+## Tips
+
+Some settings are better overridden in the workspace settings rather than the user settings. This gives per-project control over settings such as mainsource, prebuild, postbuild, etc. Any settings that expect paths can also use just a filename relative to the workspace, improving code portability. You don't _have_ to use a workspace and can continue to open and assemble stand-alone source files but there are many benefits.
+
+If your project is spread across multiple source files it may help to configure the main source file name in the settings, ensuring it is assembled even if it's not the active source file in the editor. The default behaviour is to assemble the active source file, which may be one of the include files.
+
+The prebuild and postbuild settings can be useful to prepare graphics data, package the output disk image, etc. Each setting is a shell command including arguments, so take care to add double quotes where appropriate. More complex projects may still prefer the flexibility provided by Visual Studio Code build tasks, as detailed below.
+
+There is _BASENAME_ keyword substitution applied to the extraopts, prebuild and postbuild options. Any use is replaced by the basename of the main source module. For example, if your source file is called _myfile.asm_, any instances of _BASENAME_ will be replaced by _myfile_. This can help manage different file types related to the main files, including generating additional output files from the assembler.
 
 ## Custom Build Tasks
 
-My own build environment often requires more control over the build process than single module building provides. In those cases I use a Makefile under Linux and Mac, and make.bat under Windows. A parameter to make controls how the program is built and run.
+Some build environments require more control than this extension can provide. You may want to use a custom Makefile under Linux and macOS, and make.bat under Windows, with some settings passed through on the command-line.
 
 The following tasks.json configuration allows this to be used from Visual Studio Code:
 
@@ -104,3 +112,8 @@ You'll still need to provide the guts of the Makefile/make.bat process, of cours
 
 The pyz80 assembler and SAMDOS2 binary are distributed under the terms of the GNU General Public License version 2.  
 The rest of the Visual Studio Code extension is distributed under the MIT License.
+
+## Links
+
+[Extension Source Code](https://github.com/simonowen/vscode-pyz80)  
+[Extension Marketplace](https://marketplace.visualstudio.com/items?itemName=simonowen.pyz80)  
