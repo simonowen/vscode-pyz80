@@ -1,6 +1,20 @@
 # Change Log
 
-## Version 1.2.2 (2022-01-06)
+## Version 1.4.1 (2023-05-13)
+- Added mainsource setting to specify primary source file to assemble.
+- Added prebuild and postbuild command settings for custom processing.
+- Added autosave setting to control modified file saving before builds.
+- Added samdos setting to override DOS image added to disk images.
+- Added default support for launching disks using locally installed SimCoupe.
+- Added save and assemble steps before run and network launch.
+- Added BASENAME replacement for some settings to pass main name component.
+- Added CD to project directory, reducing need for full paths.
+- Renamed pyz80opts to extraopts for additional pyz80.py command-line settings.
+- Removed unnecessary default settings due to improved default behaviour.
+- Fixed issues using custom paths containing spaces.
+- Updated pyz80.py with 9-sector support.
+
+## Version 1.3.0 (2022-01-06)
 - Improved syntax colouring.
 - Updated pyz80.py to latest version.
 
