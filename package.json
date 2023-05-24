@@ -2,7 +2,7 @@
 	"name": "pyz80",
 	"displayName": "pyz80 Assembler",
 	"description": "Build SAM Coupé programs in Visual Studio Code",
-	"version": "1.3.0",
+	"version": "1.4.1",
 	"publisher": "simonowen",
 	"icon": "images/icon.png",
 	"license": "MIT",
@@ -11,10 +11,10 @@
 		"url": "https://github.com/simonowen"
 	},
 	"engines": {
-		"vscode": "^1.18.0"
+		"vscode": "^1.50.1"
 	},
 	"categories": [
-		"Languages"
+		"Programming Languages"
 	],
 	"homepage": "https://github.com/simonowen/vscode-pyz80",
 	"bugs": {
@@ -26,6 +26,7 @@
 	},
 	"keywords": [
 		"z80",
+		"pyz80",
 		"sam coupe"
 	],
 	"activationEvents": [
@@ -40,27 +41,52 @@
 				"pyz80.path": {
 					"type": "string",
 					"default": "",
-					"description": "Path to pyz80.py (or blank for built-in version)"
+					"description": "Path to custom pyz80.py (or blank for built-in version)"
 				},
-				"pyz80.pyz80opts": {
+				"pyz80.extraopts": {
 					"type": "string",
 					"default": "",
 					"description": "Additional command-line options for pyz80.py"
 				},
 				"pyz80.python": {
 					"type": "string",
-					"default": "python",
-					"description": "Path to Python interpreter for pyz80.py"
+					"default": "",
+					"description": "Path to Python interpreter (or blank for VS Code default)"
 				},
 				"pyz80.simcoupe": {
 					"type": "string",
-					"default": "simcoupe",
-					"description": "Path to SimCoupe for Build and Run"
+					"default": "",
+					"description": "Path to SimCoupe for Build and Run (or blank for installed version)"
 				},
 				"pyz80.samdisk": {
 					"type": "string",
-					"default": "samdisk",
-					"description": "Path to SAMdisk v4 for launch via Trinity"
+					"default": "",
+					"description": "Path to SAMdisk v4 for network launch to TrinLoad (or blank for path version)"
+				},
+				"pyz80.samdos": {
+					"type": "string",
+					"default": "",
+					"description": "Path to custom SAMDOS binary (or blank for built-in samdos2 image)"
+				},
+				"pyz80.mainfile": {
+					"type": "string",
+					"default": "",
+					"description": "Main source filename to assemble (or blank for active source file)"
+				},
+				"pyz80.autosave": {
+					"type": "boolean",
+					"default": "true",
+					"description": "If true (default), save modified documents before assembling"
+				},
+				"pyz80.prebuild": {
+					"type": "string",
+					"default": "",
+					"description": "Shell command to run before the assembler"
+				},
+				"pyz80.postbuild": {
+					"type": "string",
+					"default": "",
+					"description": "Shell command to run after the assembler"
 				}
 			}
 		},
@@ -87,22 +113,22 @@
 			},
 			{
 				"key": "ctrl-shift-f10",
-				"command": "pyz80.trinity",
+				"command": "pyz80.net",
 				"when": "editorLangId == pyz80"
 			}
 		],
 		"commands": [
 			{
 				"command": "pyz80.build",
-				"title": "pyz80: Assemble the current source file"
+				"title": "pyz80: Assemble Z80 source file"
 			},
 			{
 				"command": "pyz80.run",
-				"title": "pyz80: Launch with SimCoupe"
+				"title": "pyz80: Assemble and launch with SimCoupe"
 			},
 			{
-				"command": "pyz80.trinity",
-				"title": "pyz80: Send to Trinity using SAMdisk"
+				"command": "pyz80.net",
+				"title": "pyz80: Assemble and network send to TrinLoad"
 			}
 		],
 		"languages": [

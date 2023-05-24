@@ -9,8 +9,7 @@
             "runtimeExecutable": "${execPath}",
             "args": [
                 "--extensionDevelopmentPath=${workspaceRoot}"
-            ],
-            "stopOnEntry": false
+            ]
         }
     ]
 }

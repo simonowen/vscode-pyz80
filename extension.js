@@ -1,105 +1,141 @@
 'use strict';
-const vscode = require("vscode");
+const vscode = require('vscode');
 
 function activate(context) {
+    const disk_ext = '.dsk';
+    const cmd_prefix = process.platform === 'win32' ? '&' : '';
     const path = require('path');
-    let terminalStack = [];
+    let terminal = undefined;
 
-    /* Experimental!
-    vscode.languages.registerHoverProvider('pyz80', {
-        provideHover(document, position, token) {
-            // Experimental!
-            const details = [
-                ["EX AF,AF'", '', '08', '4'],
-                ["EX DE,HL'", '', 'EB', '4'],
-                ["EXX", '', 'D9', '4'],
-                ["XOR r", 'xor [bcdehla]', '10101111 (??|??|??|??|??|??|AF)', '4'],
-                ["PUSH qq", 'push (af|bc|de|hl)', '11qq0101 (BC=C5, DE=D5, HL=E5, AF=F5)', '11'],
-                ["POP qq", 'pop (af|bc|de|hl)', '11qq0001 (C1|D1|E1|F1)', '10']
-            ];
+    function replaceKeywords(str) {
+        const source = path.parse(getSourceFilePath());
+        str = str.replace(/\bBASENAME\b/, source.name);
+        return str;
+    }
 
-            let line = vscode.window.activeTextEditor.document.lineAt(position.line).text;
-            line = line.replace(/^\w+:?/, '');
-            line = line.replace(/;.*$/, '');
-            line = line.replace(/\s+/g, ' ');
-            line = line.trim();
+    function getSourceFilePath() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        let srcPath = vscode.window.activeTextEditor.document.uri.fsPath;
 
-            for (let i = 0; i < details.length; ++i) {
-                if (line.match(new RegExp('^' + (details[i][1] || details[i][0]) + '$', "i"))) {
-                    let md = new vscode.MarkdownString();
-                    md.isTrusted = true;
-                    md.appendCodeblock(details[i][0] + "\n\n", "pyz80");
-                    md.appendMarkdown("Timing: " + details[i][3] + "T\n\n");
-                    md.appendMarkdown("Opcode: " + details[i][2] + "\n\n");
-                    return new vscode.Hover(md);
+        if (config.mainfile) {
+            const mainfile = path.parse(config.mainfile);
+            const curWorkspace = vscode.workspace.getWorkspaceFolder(vscode.Uri.file(srcPath));
+            const baseDir = mainfile.dir || curWorkspace?.uri?.fsPath || path.dirname(srcPath);
+
+            srcPath = path.join(baseDir, mainfile.base);
+        }
+
+        return srcPath;
+    }
+
+    function getCdCommand() {
+        const sourcePath = getSourceFilePath();
+        const sourceDir = path.dirname(sourcePath);
+        return `cd "${sourceDir}"`;
+    }
+
+    function getPrebuildCommand() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        return replaceKeywords(config.prebuild);
+    }
+
+    function getPostbuildCommand() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        return replaceKeywords(config.postbuild);
+    }
+
+    function getBuildCommand() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        const source = path.parse(getSourceFilePath());
+        const mapFile = `${source.name}.map`;
+        const samdosPath = config.samdos || context.asAbsolutePath('lib/samdos2');
+        const pythonPath = config.python || vscode.workspace.getConfiguration('python')?.defaultInterpreterPath || 'python';
+        const pyz80Path = config.path || context.asAbsolutePath('lib/pyz80.py');
+        const extraOpts = replaceKeywords(config.extraopts) || '';
+
+        return `"${pythonPath}" "${pyz80Path}" "-I" "${samdosPath}" "--mapfile=${mapFile}" ${extraOpts} "${source.base}"`;
+    }
+
+    function getRunCommand() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        const source = path.parse(getSourceFilePath());
+        const diskFile = `${source.name}${disk_ext}`;
+        let cmd = config.simcoupe ? `"${config.simcoupe}"` : 'simcoupe';
+
+        if (process.platform === 'win32') {
+            cmd = config.simcoupe ? `"${config.simcoupe}"` : 'Start-Process SimCoupe.exe';
+        } else if (process.platform === 'darwin') {
+            cmd = config.simcoupe ? `open "${config.simcoupe}"` : `open -a "SimCoupe"`;
+        }
+
+        return `${cmd} "${diskFile}"`;
+    }
+
+    function getNetCommand() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        const source = path.parse(getSourceFilePath());
+        const diskFile = `${source.name}${disk_ext}`;
+        const samdiskPath = config.samdisk || 'samdisk';
+
+        return `"${samdiskPath}" "${diskFile}" "trinity:"`;
+    }
+
+    function autoSaveModified() {
+        const config = vscode.workspace.getConfiguration('pyz80');
+        if (config.autosave) {
+            vscode.workspace.textDocuments.forEach((document) => {
+                if (document.isDirty && !document.isUntitled) {
+                    document.save();
+                }
+            });
+        }
+    }
+
+    function runTerminalCommands(...commands) {
+        if (!terminal) {
+            // Force PowerShell under Windows in case user has changed default shell to Command Prompt.
+            terminal = vscode.window.createTerminal('pyz80', process.platform === 'win32' ? 'powershell.exe' : undefined);
+        }
+        terminal.show(true);
+
+        let cmd = '';
+        for (let i=0; i < commands.length; i++) {
+            if (commands[i]) {
+                if (cmd.length === 0) {
+                    cmd = `${cmd_prefix} ${commands[i]}`;
+                } else if (process.platform === 'win32') {
+                    cmd += ` ; if ($?) { ${cmd_prefix} ${commands[i]} }`; // Needed for older PowerShell
+                } else {
+                    cmd += ` && ${commands[i]}`;
                 }
             }
+        }
 
-            return null;
+        terminal.sendText(cmd);
+    }
+
+    vscode.window.onDidCloseTerminal((closedTerminal) => {
+        if (closedTerminal === terminal) {
+            terminal = null;
         }
     });
-    */
 
     context.subscriptions.push(vscode.commands.registerCommand('pyz80.build', () => {
-        let config = vscode.workspace.getConfiguration('pyz80');
-        let filePath = vscode.window.activeTextEditor.document.fileName.toString();
-        let mapPath = filePath.replace(/\.[^.]+$/, '') + ".map";
-        let pythonPath = config.python || "${config:python.pythonPath}" || "python";
-        let pyz80Path = config.path || context.asAbsolutePath('lib/pyz80.py');
-        let pyz80Opts = config.pyz80opts || "";
-        let samdosPath = context.asAbsolutePath('lib/samdos2');
-        let cmd = pythonPath + ' ' +
-            '"' + pyz80Path + '"' + ' ' +
-            '-I ' + '"' + samdosPath + '"' + ' ' +
-            '--mapfile=' + '"' + mapPath + '"' + ' ' +
-            pyz80Opts + ' ' +
-            '"' + filePath + '"';
-        getTerminal().sendText(cmd);
+        autoSaveModified();
+        runTerminalCommands(getCdCommand(), getPrebuildCommand(), getBuildCommand(), getPostbuildCommand());
     }));
 
     context.subscriptions.push(vscode.commands.registerCommand('pyz80.run', () => {
-        let config = vscode.workspace.getConfiguration('pyz80');
-        let filePath = vscode.window.activeTextEditor.document.fileName.toString();
-        let diskPath = filePath.replace(/\.[^.]+$/, '') + ".dsk";
-        let simcoupePath = config.simcoupe || "simcoupe";
-        let cmd = simcoupePath + ' ' +
-            '"' + diskPath + '"';
-        getTerminal().sendText(cmd);
+        autoSaveModified();
+        runTerminalCommands(getCdCommand(), getPrebuildCommand(), getBuildCommand(), getPostbuildCommand(), getRunCommand());
     }));
 
-    context.subscriptions.push(vscode.commands.registerCommand('pyz80.trinity', () => {
-        let config = vscode.workspace.getConfiguration('pyz80');
-        let filePath = vscode.window.activeTextEditor.document.fileName.toString();
-        let diskPath = filePath.replace(/\.[^.]+$/, '') + '.dsk';
-        let samdiskPath = config.samdisk || 'samdisk';
-        let cmd = samdiskPath + ' ' +
-            '"' + diskPath + '"' + ' ' +
-            '"' + 'trinity:' + '"';
-        getTerminal().sendText(cmd);
+    context.subscriptions.push(vscode.commands.registerCommand('pyz80.net', () => {
+        autoSaveModified();
+        runTerminalCommands(getCdCommand(), getPrebuildCommand(), getBuildCommand(), getPostbuildCommand(), getNetCommand());
     }));
-
-    function getTerminal() {
-        if (terminalStack.length === 0) {
-            terminalStack.push(vscode.window.createTerminal(`pyz80 #${terminalStack.length + 1}`));
-        }
-        let term = terminalStack[terminalStack.length - 1];
-        term.show(true);
-        return term;
-    }
-
-    if ('onDidCloseTerminal' in vscode.window) {
-        vscode.window.onDidCloseTerminal((terminal) => {
-            terminalStack.pop();
-        });
-    }
-    if ('onDidOpenTerminal' in vscode.window) {
-        vscode.window.onDidOpenTerminal((terminal) => {
-            terminalStack.length + 1;
-        });
-    }
 }
 exports.activate = activate;
 
-function deactivate() {
-}
+function deactivate() { }
 exports.deactivate = deactivate;

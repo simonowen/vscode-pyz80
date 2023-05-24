@@ -81,7 +81,7 @@ def new_disk_image():
 
     image = array.array('B')
     image.append(0)
-    targetsize = 80*10*2*512
+    targetsize = 80*SPT*2*512
     # disk image is arranged as: tr 0 s 1-10, tr 128 s 1-10, tr 1 s 1-10, tr 129 s 1-10 etc
 
     while len(image) < targetsize:
@@ -92,12 +92,15 @@ def new_disk_image():
     return image
 
 def dsk_at(track,side,sector):
-    return (track*20+side*10+(sector-1))*512
+    return (track*SPT*2+side*SPT+(sector-1))*512
     # uses numbering 1-10 for sectors, because SAMDOS internal format also does
 
 
 def add_file_to_disk_image(image, filename, codestartpage, codestartoffset, execpage=0, execoffset=0, filelength=None, fromfile=None ):
-    global firstpageoffset
+    global firstpageoffset, global_currentfile, global_currentline
+
+    global_currentfile = 'add file'
+    global_currentline = ''
 
     if fromfile != None:
         modified = datetime.datetime.fromtimestamp(os.path.getmtime(fromfile))
@@ -117,8 +120,8 @@ def add_file_to_disk_image(image, filename, codestartpage, codestartoffset, exec
     # and place new files just at the end of the used space
 
     #find an unused directory entry
-    for direntry in range(80):
-        dirpos = dsk_at(direntry//20,0,1+(direntry%20)//2) + 256*(direntry%2)
+    for direntry in range(4*SPT*2):
+        dirpos = dsk_at(direntry//(SPT*2),0,1+(direntry%(SPT*2))//2) + 256*(direntry%2)
         if image[dirpos] == 0:
             break
         else:
@@ -136,9 +139,9 @@ def add_file_to_disk_image(image, filename, codestartpage, codestartoffset, exec
     image[dirpos+11] = nsectors // 256 # MSB number of sectors used
     image[dirpos+12] = nsectors % 256 # LSB number of sectors used
 
-    starting_side =  (4 + sectors_already_used//10)//80
-    starting_track = (4 + sectors_already_used//10)%80
-    starting_sector = sectors_already_used%10 + 1
+    starting_side =  (4 + sectors_already_used//SPT)//80
+    starting_track = (4 + sectors_already_used//SPT)%80
+    starting_sector = sectors_already_used%SPT + 1
 
     image[dirpos+13] = starting_track + 128*starting_side # starting track
     image[dirpos+14] = starting_sector # starting sector
@@ -237,7 +240,7 @@ def add_file_to_disk_image(image, filename, codestartpage, codestartoffset, exec
         fpos += copylen
 
         sector += 1
-        if sector == 11:
+        if sector == (SPT+1):
             sector = 1
             track += 1
             if track == 80:
@@ -1785,6 +1788,7 @@ ZIP = True
 CASE = False
 NOBODMAS = False
 INTDIV = False
+SPT = 10
 
 lstcode=""
 listsymbols=[]
@@ -1865,6 +1869,8 @@ for option,value in option_args:
 
     if option in ['-I']:
         includefiles.append(value)
+        if os.path.basename(includefiles[0]).lower() == 'samdos9':
+            SPT = 9
 
 if len(file_args) == 0 and len(includefiles) == 0:
     print("No input file specified")
