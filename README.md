@@ -8,16 +8,18 @@ For convenient use with small projects the extension includes:
 
 * the latest pyz80 from my [GitHub page](https://github.com/simonowen/pyz80).
 * **F10** shortcut to assemble Z80 source code to a SAM disk image.
-* **Ctrl-F10** shortcut to assemble and run the disk image in SimCoupe.
-* **Ctrl-Shift-F10** shortcut to assemble and send to a networked SAM Coupé.
+* **Ctrl-F10** shortcut to assemble and run the disk image in SimCoupe.[^1]
+* **Ctrl-Shift-F10** shortcut to assemble and send to a networked SAM Coupé.[^1]
 * SAMDOS v2 added as the first file in the generated disk image to make it bootable.
 * generation of a symbol map file compatible with the SimCoupe v1.1+ debugger.
+
+[^1]: Requires `DUMP` and `AUTOEXEC` directives in assembly source code - see [pyz80 docs](https://github.com/simonowen/pyz80/blob/master/README.md)
 
 ## Additional Requirements
 
 * [Python](https://www.python.org/downloads/) version v2.x or later to run the pyz80 assembler.
 * [SimCoupe](https://simonowen.com/simcoupe) v1.1 or later to run and debug code with symbols.
-* [SAMdisk](https://github.com/simonowen/samdisk/releases/tag/20220725) v4 or later to send code to a networked SAM running TrinLoad.
+* [SAMdisk](https://github.com/simonowen/samdisk/releases/tag/20220725) v4 or later to send code to a networked SAM running [TrinLoad](https://simonowen.com/blog/2015/03/05/trinload-10/).
 
 If these programs are not already in your path you will need to set the appropriate configuration settings.
 
