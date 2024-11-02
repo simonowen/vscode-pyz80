@@ -15,7 +15,7 @@ For convenient use with small projects the extension includes:
 
 ## Additional Requirements
 
-* [Python](https://www.python.org/downloads/) version v2.x or later to run the pyz80 assembler.
+* [Python](https://www.python.org/downloads/) version v3.6 or later to run the pyz80 assembler.
 * [SimCoupe](https://simonowen.com/simcoupe) v1.1 or later to run and debug code with symbols.
 * [SAMdisk](https://github.com/simonowen/samdisk/releases/tag/20220725) v4 or later to send code to a networked SAM running TrinLoad.
 

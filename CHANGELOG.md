@@ -1,5 +1,8 @@
 # Change Log
 
+## Version 1.4.3 (2024-11-02)
+- Updated pyz80.py to fix Python 2.x issues on Linux and macOS.
+
 ## Version 1.4.2 (2024-04-07)
 - Updated pyz80.py to latest version, fixing string escape warnings.
 
