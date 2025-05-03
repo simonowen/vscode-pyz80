@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import print_function
-from __future__ import division
 import math
 
 # TODO: define and assemble macro blocks
@@ -18,6 +16,9 @@ def printusage():
     print("   save the resulting disk image at the given path")
     print("--nozip")
     print("   do not compress the resulting disk image")
+    print("-B filepath")
+    print("   Bootable (usually DOS) file added first to disk image, but")
+    print("   only if the first assembled file has no BOOT signature.")
     print("-I filepath")
     print("   Add this file to the disk image before assembling")
     print("   May be used multiple times to add multiple files")
@@ -44,6 +45,8 @@ def printusage():
     print("-s regexp")
     print("   print the value of any symbols matching the given regular expression")
     print("   This may be used multiple times to output more than one subset")
+    print("-x")
+    print("   display values from the -s option and PRINT directives in hex")
     print("-e")
     print("   use python's own error handling instead of trying to catch parse errors")
 
@@ -66,31 +69,18 @@ def printlicense():
 import getopt
 import sys, os, datetime
 import array
-import fileinput
 import re
 import gzip
+import pickle
 import math # for use by expressions in source files
-import random
+import random # note: in use via eval strings
 
-# Try for native pickle (2.x), fall back on Python version (3.x)
-try:
-    import cPickle as pickle
-except ImportError:
-    import pickle
-
-def new_disk_image():
-
-    image = array.array('B')
-    image.append(0)
+def new_disk_image(sectors_per_track):
+    global SPT
+    SPT = sectors_per_track
     targetsize = 80*SPT*2*512
     # disk image is arranged as: tr 0 s 1-10, tr 128 s 1-10, tr 1 s 1-10, tr 129 s 1-10 etc
-
-    while len(image) < targetsize:
-        image.extend(image)
-    while len(image) > targetsize:
-        image.pop()
-
-    return image
+    return array.array('B', [0] * targetsize)
 
 def dsk_at(track,side,sector):
     return (track*SPT*2+side*SPT+(sector-1))*512
@@ -337,8 +327,8 @@ def warning(message):
     print('\t', global_currentline.strip())
 
 def fatal(message):
-    print(global_currentfile, 'error:', message)
-    print ('\t', global_currentline.strip())
+    print(global_currentfile, 'error:', message, file=sys.stderr)
+    print ('\t', global_currentline.strip(), file=sys.stderr)
     sys.exit(1)
 
 def expand_symbol(sym):
@@ -428,22 +418,14 @@ def get_symbol(sym):
                                     closest = abs(difference)
                                     closestKey = key
 
-
-
             if closestKey != None:
                 sym = closestKey
-
-
-
 
     if sym in symboltable:
         symusetable[sym] = symusetable.get(sym,0)+1
         return symboltable[sym]
 
     return None
-
-
-
 
 def parse_expression(arg, signed=0, byte=0, word=0, silenterror=0):
     if ',' in arg:
@@ -763,7 +745,7 @@ def op_PRINT(p, opargs):
         else:
             a = parse_expression(expr, silenterror=True)
             if a:
-                text.append(str(a))
+                text.append(f"{a:x}" if HEX else str(a))
             else:
                 text.append("?")
     print(global_currentfile, "PRINT: ", ",".join(text))
@@ -1679,7 +1661,7 @@ def assembler_pass(p, inputfile):
         global_path = os.path.dirname(this_currentfilename)
 
     try:
-        currentfile = open(this_currentfilename,'r')
+        currentfile = open(this_currentfilename,'r',encoding='utf-8-sig')
         wholefile=currentfile.readlines()
         wholefile.insert(0, '') # prepend blank so line numbers are 1-based
         currentfile.close()
@@ -1774,7 +1756,7 @@ def assembler_pass(p, inputfile):
 ###########################################################################
 
 try:
-    option_args, file_args = getopt.getopt(sys.argv[1:], 'ho:s:eD:I:', ['version','help','nozip','obj=','case','nobodmas','intdiv','exportfile=','importfile=','mapfile=','lstfile='])
+    option_args, file_args = getopt.getopt(sys.argv[1:], 'ho:s:eD:B:I:x', ['version','help','nozip','obj=','case','nobodmas','intdiv','exportfile=','importfile=','mapfile=','lstfile='])
     file_args = [os.path.normpath(x) for x in file_args]
 except getopt.GetoptError:
     printusage()
@@ -1789,13 +1771,15 @@ ZIP = True
 CASE = False
 NOBODMAS = False
 INTDIV = False
-SPT = 10
+HEX = False
+SPT = None
 
 lstcode=""
 listsymbols=[]
 predefsymbols=[]
 includefiles=[]
 importfiles=[]
+bootfile = None
 exportfile = None
 mapfile = None
 listingfile = None
@@ -1825,6 +1809,9 @@ for option,value in option_args:
 
     if option in ['-e']:
         PYTHONERRORS = True # let python do its own error handling
+
+    if option in ['-x']:
+        HEX = True
 
     if option in ['--nozip']:
         ZIP = False # save the disk image without compression
@@ -1868,10 +1855,16 @@ for option,value in option_args:
     if option in ['-D']:
         predefsymbols.append(value)
 
+    if option in ['-B']:
+        if bootfile == None:
+            bootfile = value
+        else:
+            print("Boot file specified twice")
+            printusage()
+            sys.exit(2)
+
     if option in ['-I']:
         includefiles.append(value)
-        if os.path.basename(includefiles[0]).lower() == 'samdos9':
-            SPT = 9
 
 if len(file_args) == 0 and len(includefiles) == 0:
     print("No input file specified")
@@ -1886,10 +1879,7 @@ if (objectfile != '') and (len(file_args) != 1):
 if (outputfile == '') and (objectfile == ''):
     outputfile = os.path.splitext(file_args[0])[0] + ".dsk"
 
-image = new_disk_image()
-
-for pathname in includefiles:
-    save_file_to_image(image,pathname)
+image = new_disk_image(10)
 
 for inputfile in file_args:
 
@@ -1975,7 +1965,8 @@ for inputfile in file_args:
         # add to printsymbols any pair from symboltable whose key matches symreg
         for sym in symboltable:
             if re.search(symreg, sym, 0 if CASE else re.IGNORECASE):
-                printsymbols[symbolcase.get(sym, sym)] = symboltable[sym]
+                value = symboltable[sym]
+                printsymbols[symbolcase.get(sym, sym)] = f"{value:x}" if HEX else value
 
     if printsymbols != {}:
         print(printsymbols)
@@ -2000,10 +1991,23 @@ for inputfile in file_args:
             for addr,sym in sorted(addrmap.items()):
                 f.write("%04X=%s\n" % (addr,sym))
 
+    boot_page, boot_offset = (1,0) if firstpage == 32 else (firstpage,firstpageoffset)
+    boot_sig = memory[boot_page][boot_offset+0xf7:boot_offset+0xf7+4]
+    bootable = bytes(b & 0x5F for b in boot_sig) == b'BOOT'
+
+    if bootfile and not bootable:
+        if os.path.basename(bootfile.lower()) == 'samdos9':
+            image = new_disk_image(9)
+        save_file_to_image(image, bootfile)
+    bootfile = None
+
+    for pathname in includefiles:
+        save_file_to_image(image, pathname)
+    includefiles = []
+
     save_memory(memory, image=image, filename=os.path.splitext(os.path.basename(inputfile))[0])
     if objectfile != "":
         save_memory(memory, filename=objectfile)
-
 
 if outputfile != '':
     save_disk_image(image, outputfile)

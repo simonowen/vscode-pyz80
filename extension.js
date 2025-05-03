@@ -53,7 +53,7 @@ function activate(context) {
         const pyz80Path = config.path || context.asAbsolutePath('lib/pyz80.py');
         const extraOpts = replaceKeywords(config.extraopts) || '';
 
-        return `"${pythonPath}" "${pyz80Path}" "-I" "${samdosPath}" "--mapfile=${mapFile}" ${extraOpts} "${source.base}"`;
+        return `"${pythonPath}" "${pyz80Path}" "-B" "${samdosPath}" "--mapfile=${mapFile}" ${extraOpts} "${source.base}"`;
     }
 
     function getRunCommand() {

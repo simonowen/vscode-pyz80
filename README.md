@@ -10,7 +10,7 @@ For convenient use with small projects the extension includes:
 * **F10** shortcut to assemble Z80 source code to a SAM disk image.
 * **Ctrl-F10** shortcut to assemble and run the disk image in SimCoupe.
 * **Ctrl-Shift-F10** shortcut to assemble and send to a networked SAM Coupé.
-* SAMDOS v2 added as the first file in the generated disk image to make it bootable.
+* SAMDOS v2 added as the first file in the generated disk image to make it bootable (if needed).
 * generation of a symbol map file compatible with the SimCoupe v1.1+ debugger.
 
 ## Additional Requirements
