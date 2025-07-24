@@ -1,5 +1,8 @@
 # Change Log
 
+## Version 1.4.5 (2025-07-25)
+- Updated pyz80 to v1.3.0, with new STRUCT and MACRO support.
+
 ## Version 1.4.4 (2025-05-04)
 - Updated pyz80.py to fix utf-8 BOM issue, add -B (boot) and -x (hex) options.
 - changed command line to use -B instead of -I for DOS image.

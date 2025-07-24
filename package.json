@@ -2,7 +2,7 @@
 	"name": "pyz80",
 	"displayName": "pyz80 Assembler",
 	"description": "Build SAM Coupé programs in Visual Studio Code",
-	"version": "1.4.4",
+	"version": "1.4.5",
 	"publisher": "simonowen",
 	"icon": "images/icon.png",
 	"license": "MIT",
@@ -30,6 +30,19 @@
 		"sam coupe"
 	],
 	"main": "./extension",
+	"files": [
+		"extension.js",
+		"package.json",
+		"syntaxes/Z80.tmLanguage",
+		"snippets/pyz80.json",
+		"images/icon.png",
+		"language-configuration.json",
+		"lib/pyz80.py",
+		"lib/samdos2",
+		"README.md",
+		"LICENSE.txt",
+		"CHANGELOG.md"
+	],
 	"contributes": {
 		"configuration": {
 			"title": "pyz80",
@@ -38,7 +51,7 @@
 				"pyz80.path": {
 					"type": "string",
 					"default": "",
-					"description": "Path to custom pyz80.py (or blank for built-in version)"
+					"description": "Path to custom pyz80 (or blank for built-in version)"
 				},
 				"pyz80.extraopts": {
 					"type": "string",
